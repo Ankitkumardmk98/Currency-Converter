@@ -1,5 +1,5 @@
-import 'package:currency_convertor_app/constants.dart';
 import 'package:flutter/material.dart';
+import 'constants.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -9,29 +9,35 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  //Variables
+  //Variables to be used in Code
   String output = "";
-  double rate = 80;
-  TextEditingController control = TextEditingController();
+  double conversionRate = 82.5;
+  TextEditingController currencyController = TextEditingController();
 
-  //Currency Conversion Logic
-  void currencyConvert() {
-    String userInput = control.text;
+  //Logic of the app
+  void convertCurrency() {
+    String userInput = currencyController.text;
     if (userInput.isNotEmpty) {
       try {
         double usdValue = double.parse(userInput);
-
-        setState(() {
-          output = "${usdValue * rate}";
-        });
+        String finalRate = (usdValue * conversionRate).toStringAsFixed(2);
+        if (usdValue.isNegative) {
+          setState(() {
+            output = "Negative numbers are not allowed";
+          });
+        } else {
+          setState(() {
+            output = "Your \$$usdValue will be Rs $finalRate";
+          });
+        }
       } catch (e) {
         setState(() {
-          output = "Invalid Number";
+          output = "Invalid input. Please enter a valid number";
         });
       }
     } else {
       setState(() {
-        output = "Please enter any number";
+        output = "The field cannot be empty";
       });
     }
   }
@@ -40,58 +46,59 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: bgColor,
+      appBar: AppBar(
+        backgroundColor: bgColor,
+        centerTitle: true,
+        title: Text(
+          "Currency Converter",
+          style: TextStyle(
+            color: white,
+          ),
+        ),
+      ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            "Enter Your Currency",
+            "Enter Currency Amount",
             style: TextStyle(
               color: white,
-              fontSize: 18,
+              fontSize: 20,
             ),
           ),
           Padding(
             padding: const EdgeInsets.only(
-              left: 10,
-              right: 10,
               top: 30,
               bottom: 30,
+              left: 40,
+              right: 40,
             ),
             child: TextField(
-              controller: control,
+              style: TextStyle(color: white),
+              controller: currencyController,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
                 labelText: "Enter in USD",
                 labelStyle: TextStyle(
                   color: white,
                 ),
-                prefixIcon: Padding(
-                  padding: EdgeInsets.only(
-                    left: 20,
-                    right: 10,
-                  ),
-                  child: Icon(
-                    Icons.monetization_on,
-                    color: white,
-                  ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(40),
                 ),
-              ),
-              style: TextStyle(
-                color: white,
+                prefixIcon: Icon(
+                  Icons.monetization_on,
+                  color: white,
+                ),
               ),
             ),
           ),
           ElevatedButton(
-            onPressed: currencyConvert,
+            onPressed: convertCurrency,
             child: Text("Convert"),
           ),
           Padding(
             padding: const EdgeInsets.only(
               top: 40,
-              bottom: 40,
             ),
             child: Text(
               output,
