@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'constants.dart';
 
+import 'package:http/http.dart' as http;
+import 'dart:convert'; // For converting API response to JSON
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -9,9 +12,45 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+// Fetch live conversion rate
+  Future<void> fetchConversionRate() async {
+    final url = Uri.parse(
+        'https://api.exchangerate-api.com/v4/latest/USD'); // Example API URL
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          conversionRate = data['rates']
+              ['INR']; // Adjust this if the API uses a different structure
+        });
+      } else {
+        setState(() {
+          output = "Failed to load conversion rate";
+        });
+      }
+    } catch (e) {
+      setState(() {
+        output = "Error fetching data";
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchConversionRate(); // Fetch the conversion rate when the app starts
+  }
+
+  @override
+  void dispose() {
+    currencyController.dispose(); // Clean up the controller
+    super.dispose();
+  }
+
   //Variables to be used in Code
   String output = "";
-  double conversionRate = 82.5;
+  double conversionRate = 0;
   TextEditingController currencyController = TextEditingController();
 
   //Logic of the app
@@ -21,7 +60,7 @@ class _HomePageState extends State<HomePage> {
       try {
         double usdValue = double.parse(userInput);
         String finalRate = (usdValue * conversionRate).toStringAsFixed(2);
-        if (usdValue.isNegative) {
+        if (usdValue < 0) {
           setState(() {
             output = "Negative numbers are not allowed";
           });
@@ -37,7 +76,7 @@ class _HomePageState extends State<HomePage> {
       }
     } else {
       setState(() {
-        output = "The field cannot be empty";
+        output = "Please enter a value";
       });
     }
   }
